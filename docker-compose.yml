@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+    app:
+        build: .
+        container_name: globaltask-app
+        ports:
+            - '8000:8000'
+        volumes:
+            - ./src:/code/src
+        command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
