@@ -109,3 +109,10 @@ RESTRICTED_COUNTRY_KEYWORDS = [
     "uae", "united arab emirates", "dubai", "abu dhabi", "emirati",
     "yemen", "yemeni"
 ]
+
+CHILD_AUDIENCE_KEYWORDS = [
+    "child", "children", "kid", "kids", "toddler",
+    "teen", "teenager", "under 18", "u18", "school",
+    "nursery", "youth", "young people"
+]
+

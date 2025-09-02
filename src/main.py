@@ -6,20 +6,7 @@ import json
 import os
 from .services import *
 from .rules import *
-
-class Metadata(BaseModel):
-    market: Optional[str] = None
-    placement: Optional[str] = None
-    audience: Optional[str] = None
-    category: Optional[str] = None
-
-class CreativeApprovalResponse(BaseModel):
-    status: str
-    reasons: list[str]
-    img_format: str
-    img_width: int
-    img_height: int
-    img_size: int
+from .models import *
 
 app = FastAPI()
 
@@ -35,14 +22,15 @@ def get_health():
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 
+
 @app.post("/creative-approval", response_model=CreativeApprovalResponse)
 async def creative_approval(
     file: UploadFile = File(...),
     metadata: Optional[str] = Form(None)
 ):
-    meta_dict = json.loads(metadata) if metadata else {}
+    meta = Metadata(**json.loads(metadata)) if metadata else Metadata()
 
-    img, _, _  = await open_file(file)
+    img, file_format, contents  = await open_file(file)
 
     # 1. Check File Properties
     # 1.1 Validate file format
@@ -82,15 +70,25 @@ async def creative_approval(
 
     # 1.4 Check aspect ratio
     aspect_ratio = width / height
-    if aspect_ratio > 2 or aspect_ratio < 0.5:
+    if aspect_ratio > 2 or aspect_ratio < 0.5: # if ratio is greater than 2:1
         response["status"] = "REQUIRES_REVIEW"
         response["reasons"].append(
             f"Aspect ratio is too high: {aspect_ratio:.2f}"
-        )
+        )   
 
     # 2. Keyword Filters
+    # 2.1 Check filename for restricted/prohibited terms
+    status, reasons = check_filename(file.filename)
+    if status != "APPROVED":
+        response["status"] = status
+        response["reasons"].extend(reasons)
 
     # 3. Metadata checks
+    if meta:
+        status, reasons = check_metadata(meta)
+        if status != "APPROVED":
+            response["status"] = status
+            response["reasons"].extend(reasons)
 
     return CreativeApprovalResponse(**response)
 
