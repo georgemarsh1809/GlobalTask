@@ -46,20 +46,20 @@ async def creative_approval(
 
     # 1. Check File Properties
     # 1.1 Validate file format
-    # Returns a 422 error if invalid:
-    file_format, width, height, size = await validate_image(file)
+        # Returns a 422 error if invalid:
+    format, width, height, size = await validate_image(file)
 
     # Default response
     response = {
         "status": "APPROVED",
         "reasons": [],
-        "img_format": file_format,
+        "img_format": format,
         "img_width": width,
         "img_height": height,
         "img_size": size
     }
 
-    # 1.2 Calculate contrast
+    # 1.2 Check contrast
     contrast = calculate_contrast(img)
     if contrast < 15:
         response["status"] = "REQUIRES REVIEW"
@@ -67,9 +67,26 @@ async def creative_approval(
             f"Image contrast too low (score {contrast:.2f})"
     )
 
-    # check_resolution(file)
-    # check_aspect_ratio(file)
-    # check_complexity(file)
+    # 1.3 Check resolution
+    if width < MIN_WIDTH or height < MIN_HEIGHT:
+        response["status"] = "REQUIRES_REVIEW"
+        response["reasons"].append(
+            f"Image resolution too low: {width}x{height}px"
+        )
+
+    if width > MAX_WIDTH or height > MAX_HEIGHT:
+        response["status"] = "REJECTED"
+        response["reasons"].append(
+            f"Image resolution too high: {width}x{height}px"
+        )
+
+    # 1.4 Check aspect ratio
+    aspect_ratio = width / height
+    if aspect_ratio > 2 or aspect_ratio < 0.5:
+        response["status"] = "REQUIRES_REVIEW"
+        response["reasons"].append(
+            f"Aspect ratio is too high: {aspect_ratio:.2f}"
+        )
 
     # 2. Keyword Filters
 

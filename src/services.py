@@ -1,4 +1,4 @@
-from PIL import Image, ImageStat
+from PIL import Image, ImageStat, ImageSequence
 import io
 from .terms import PROHIBITED_THEMES_KEYWORDS, AGE_PROHIBITED_THEMES_KEYWORDS, RESTRICTED_COUNTRY_KEYWORDS, RESTRICTED_THEMES_KEYWORDS
 from fastapi import HTTPException, UploadFile
@@ -33,10 +33,6 @@ async def validate_image(file):
 
     return file_format, width, height, size
 
-# check dimensions/resolution
-def check_resolution(file):
-    pass
-
 # check aspect ratio
 def check_aspect_ratio(file):
     pass
@@ -50,6 +46,17 @@ def calculate_contrast(img: Image.Image) -> float:
 # check file complexity
 def check_complexity(file):
     pass
+
+def get_gif_info(img: Image.Image) -> tuple[int, list[int]]:
+    frame_count = 0
+    durations = []  
+
+    for frame in ImageSequence.Iterator(img):
+        frame_count += 1
+        duration = frame.info.get("duration", 0)
+        durations.append(duration)
+
+    return frame_count, durations
 
 
 # 2. Keyword Matches
