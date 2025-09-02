@@ -5,6 +5,7 @@ from datetime import datetime
 import json
 import os
 from .services import *
+from .rules import *
 
 class Metadata(BaseModel):
     market: Optional[str] = None
@@ -41,25 +42,38 @@ async def creative_approval(
 ):
     meta_dict = json.loads(metadata) if metadata else {}
 
+    img, _, _  = await open_file(file)
+
+    # 1. Check File Properties
+    # 1.1 Validate file format
+    # Returns a 422 error if invalid:
+    file_format, width, height, size = await validate_image(file)
+
     # Default response
     response = {
-            "status": "APPROVED",
-            "reasons": [],
-            "img_format": "",
-            "img_width": 0,
-            "img_height": 0,
-            "img_size": 0
-            }
-        
-    # 1. Check File Properties
+        "status": "APPROVED",
+        "reasons": [],
+        "img_format": file_format,
+        "img_width": width,
+        "img_height": height,
+        "img_size": size
+    }
+
+    # 1.2 Calculate contrast
+    contrast = calculate_contrast(img)
+    if contrast < 15:
+        response["status"] = "REQUIRES REVIEW"
+        response["reasons"].append(
+            f"Image contrast too low (score {contrast:.2f})"
+    )
+
+    # check_resolution(file)
+    # check_aspect_ratio(file)
+    # check_complexity(file)
 
     # 2. Keyword Filters
 
     # 3. Metadata checks
 
     return CreativeApprovalResponse(**response)
-    
-
-
-
 
