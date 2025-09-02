@@ -13,4 +13,4 @@ class CreativeApprovalResponse(BaseModel):
     img_format: str
     img_width: int
     img_height: int
-    img_size: int
+    img_size_mb: float
