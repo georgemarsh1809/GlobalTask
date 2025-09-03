@@ -265,3 +265,4 @@ example;
     below.
 -   Generation of restricted and prohibited terms lists (terms.py)
 -   Scaffolding of Pytest suite
+-   To scaffold this README
