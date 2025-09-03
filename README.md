@@ -43,7 +43,7 @@ The validation logic interprets prohibited content (directly rejected) versus
 restricted content (requires review) based on established advertising
 guidelines.
 
-## 1. Local Development Setup
+## 🔧 Local Setup
 
 ### Prerequisites
 
@@ -81,7 +81,7 @@ uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 
 5. Open the interactive API docs in your browser: 👉 http://localhost:8000/docs
 
-## 2. Run with Docker
+## 🐳 Run with Docker
 
 ### Prerequisites
 
@@ -103,7 +103,17 @@ docker run -p 8000:8000 creative-approval-api
 
 3. Open the interactive API docs: 👉 http://localhost:8000/docs
 
-## 3. Run Tests
+I also included a `docker-compose.yml` file so that during development, hot
+reload can be used - when edits are made, the app will restart automatically
+when you edit code.
+
+To run in this development mode:
+
+```bash
+docker-compose up --build
+```
+
+## 🧪 3. Run Tests
 
 The project uses **pytest** with tiny test images generated at runtime.
 
@@ -125,7 +135,7 @@ to upload real images and a metadata string. \
 → **Note that there is an error handler for forbidden metadata keys. Any
 unexpected keys will throw a 422 response.**
 
-## 4. API Endpoints
+## 🔌 API Endpoints
 
 -   `GET /health` → Service status
 -   `POST /creative-approval` → Upload a creative for validation
@@ -139,13 +149,13 @@ unexpected keys will throw a 422 response.**
             `"REQUIRES_REVIEW"`
         -   `img_format`, `img_width`, `img_height`, `img_size`
 
-## 5. My Approach
+## 🧠 My Approach
 
 1. Built a FastAPI server with two required endpoints.
 2. Created a Dockerfile to containerize the service on port 8000.
 3. Reviewed policies to determine prohibited vs restricted checks.
-4. Implemented backend services for each check.
-5. Linked outcomes directly to policy interpretation.
+4. Create backend services for each check
+5. Update FastAPI endpoints to receive file and run services
 
 Considering the 3 possible outcomes, it was important to interpret the
 difference between prohibited and restricted creative content from the 2
@@ -154,7 +164,20 @@ policies. These forms of content can be directly mapped to an outcome:
 -   Prohibited content (not allowed) → REJECTED
 -   Restricted content (advice needed) → REQUIRES_REVIEW If the creative content
     contains copy that is determined neither prohibited nor restricted, the
-    creative is suitable for approval.
+    creative is suitable for approval. \
+
+Considering that the scope of this project requires only 2/3 checks, it’s
+important that the checks cover as many rules/heuristics from BOTH policies as
+appropriately possible.
+
+The scope of the project doesn't require heavy ML services, so it’s not
+appropriate to analyse the exact content of the ads (such as text). This limits
+the scope to other properties of the files, such as filenames, metadata, image
+properties (format, size, aspect ratio, contrast etc.), and also simple
+heuristics;
+
+-   For example, a very low contrast may mean the text is not suitable, or large
+    aspect ratios meaning its not appropriate for outdoor use.
 
 ### High-Level Outcome Mapping:
 
@@ -164,8 +187,10 @@ Restricted → REQUIRES_REVIEW
 
 Otherwise → APPROVED
 
-This direct mapping speeds up policy interpretation and keeps the scope
-lightweight, as required in the brief.
+By splitting the checks into direct mappings to rejected/required review
+outcomes, this allows for faster interpretation of the policies - instead of
+reading every line, the focus can be on highlighting the rules in each document
+that fall under either prohibited or restricted content.
 
 ### Implemented Checks + Policy References
 
@@ -227,3 +252,16 @@ lightweight, as required in the brief.
     -   Market (country)
     -   Category (any themes listed in the policy interpretations (e.g. alcohol,
         tobacco, crypto)
+
+### 🤖 Use of GenAI:
+
+I used ChatGPT Plus to speed up small aspects of the project workflow, for
+example;
+
+-   General debugging/syntax validation
+-   Key info extraction from ASA CAP Code due to large file size. Relevant
+    rules, restrictions and prohibitions were reviewed and linked to rule
+    section numbers by me for full understanding - the sections can be seen
+    below.
+-   Generation of restricted and prohibited terms lists (terms.py)
+-   Scaffolding of Pytest suite
