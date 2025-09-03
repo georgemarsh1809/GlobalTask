@@ -3,17 +3,17 @@
 ## Overview
 
 This API validates uploaded creative files (images) against advertising
-standards including the Global Outdoor Copy Approval Guidelines and ASA CAP Code
-(UK). The service performs automated checks to determine if content should be
-approved, rejected, or requires manual review.
+standards defined in the Global Outdoor Copy Approval Guidelines and ASA CAP
+Code (UK). The service performs automated checks to determine if content should
+be approved, rejected, or requires manual review.
 
 You can run it locally or via Docker.
 
 ### Validation Logic
 
-The system categorizes content into three outcomes:
+The system categorises content into three outcomes:
 
--   **APPROVED**: Content meets all guidelines and can be used.
+-   **APPROVED**: Content meets guidelines and can be used.
 -   **REJECTED**: Content contains prohibited elements and cannot be used.
 -   **REQUIRES_REVIEW**: Content contains restricted elements requiring manual
     review.
@@ -35,19 +35,15 @@ The system categorizes content into three outcomes:
         - Age restricted terms (alcohol, energy drink, etc.)
 
 3. **Context-Aware Validation**
-    - Location-based restrictions (e.g., alcohol near schools)
+    - Location-based restrictions (e.g. alcohol near schools)
     - Market-specific content restrictions
     - Audience-appropriate content validation
-
-The validation logic interprets prohibited content (directly rejected) versus
-restricted content (requires review) based on established advertising
-guidelines.
 
 ## 🔧 Local Setup
 
 ### Prerequisites
 
--   Python **3.11+**
+-   Python 3.11+
 -   pip or Poetry for dependency management
 
 ### Steps
@@ -79,7 +75,7 @@ pip install -r requirements.txt
 uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-5. Open the interactive API docs in your browser: 👉 http://localhost:8000/docs
+5. Open the interactive API docs in your browser: http://localhost:8000/docs
 
 ## 🐳 Run with Docker
 
@@ -101,7 +97,7 @@ docker build -t creative-approval-api .
 docker run -p 8000:8000 creative-approval-api
 ```
 
-3. Open the interactive API docs: 👉 http://localhost:8000/docs
+3. Open the interactive API docs: http://localhost:8000/docs
 
 I also included a `docker-compose.yml` file so that during development, hot
 reload can be used - when edits are made, the app will restart automatically
@@ -113,7 +109,7 @@ To run in this development mode:
 docker-compose up --build
 ```
 
-## 🧪 3. Run Tests
+## 🧪 Run Tests
 
 The project uses **pytest** with tiny test images generated at runtime.
 
@@ -153,7 +149,7 @@ unexpected keys will throw a 422 response.**
 
 1. Built a FastAPI server with two required endpoints.
 2. Created a Dockerfile to containerize the service on port 8000.
-3. Reviewed policies to determine prohibited vs restricted checks.
+3. Reviewed policies and made notes on prohibited vs restricted checks.
 4. Create backend services for each check
 5. Update FastAPI endpoints to receive file and run services
 
@@ -162,9 +158,10 @@ difference between prohibited and restricted creative content from the 2
 policies. These forms of content can be directly mapped to an outcome:
 
 -   Prohibited content (not allowed) → REJECTED
--   Restricted content (advice needed) → REQUIRES_REVIEW If the creative content
-    contains copy that is determined neither prohibited nor restricted, the
-    creative is suitable for approval. \
+-   Restricted content (advice needed) → REQUIRES_REVIEW
+
+If the creative content contains copy that is determined neither prohibited nor
+restricted, the creative is suitable for approval.
 
 Considering that the scope of this project requires only 2/3 checks, it’s
 important that the checks cover as many rules/heuristics from BOTH policies as
@@ -181,11 +178,11 @@ heuristics;
 
 ### High-Level Outcome Mapping:
 
-Prohibited → REJECTED
+Prohibited → "REJECTED"
 
-Restricted → REQUIRES_REVIEW
+Restricted → "REQUIRES_REVIEW"
 
-Otherwise → APPROVED
+Otherwise → "APPROVED"
 
 By splitting the checks into direct mappings to rejected/required review
 outcomes, this allows for faster interpretation of the policies - instead of
