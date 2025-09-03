@@ -61,9 +61,13 @@ async def creative_approval(
 ):
     
     try:
-        meta = Metadata(**json.loads(metadata)) if metadata else Metadata()
+        meta = Metadata.model_validate_json(metadata) if metadata else Metadata()
     except (ValidationError, ValueError) as e:
-        raise HTTPException(status_code=422, detail="Invalid metadata JSON. Send a single JSON object string.")
+        detail = {
+            "message": "Invalid metadata",
+            "errors": e.errors() if isinstance(e, ValidationError) else str(e),
+        }
+        raise HTTPException(status_code=422, detail=detail)
 
     # Open the file
     img, size_bytes  = await open_file(file)
@@ -132,4 +136,3 @@ async def creative_approval(
             response["reasons"].extend(reasons)
 
     return CreativeApprovalResponse(**response)
-
