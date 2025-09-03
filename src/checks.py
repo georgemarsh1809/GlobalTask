@@ -12,6 +12,26 @@ from .constants import (
 from .models import Metadata
 from .services import is_child_audience, is_child_placement
 
+def check_filename(filename: str) -> tuple[str, list[str]]:
+    text = filename.lower()
+    reasons = []
+
+    for word in PROHIBITED_THEMES_KEYWORDS:
+        if word in text:
+            return STATUS_REJECTED, [f"Prohibited term in filename: {word}"]
+
+    for word in RESTRICTED_THEMES_KEYWORDS:
+        if word in text:
+            reasons.append(f"Restricted term in filename: {word}")
+
+    for word in RESTRICTED_COUNTRY_KEYWORDS:
+        if word in text:
+            reasons.append(f"Restricted country name in filename: {word}")
+
+    if reasons:
+        return STATUS_REQUIRES_REVIEW, reasons
+
+    return STATUS_APPROVED, []
 
 def check_metadata(meta: Metadata) -> tuple[str, list[str]]:
     reasons = []
@@ -22,11 +42,6 @@ def check_metadata(meta: Metadata) -> tuple[str, list[str]]:
 
     placement = (meta.placement or "").lower()
     market = (meta.market or "").lower()
-
-    # Check for prohibited themes in metadata → instantly return a reject
-    for word in PROHIBITED_THEMES_KEYWORDS:
-        if word in combined_text:
-            return STATUS_REJECTED, [f"Prohibited term found in metadata: {word}"]
     
     # Check for child related audience - if audience is children, 
     #   and if category includes age restricted themes → auto-reject.
@@ -49,6 +64,11 @@ def check_metadata(meta: Metadata) -> tuple[str, list[str]]:
 
         reasons.append(f"Child-related placement found: {placement}")
 
+        # Check for prohibited themes in metadata → instantly return a reject
+    for word in PROHIBITED_THEMES_KEYWORDS:
+        if word in combined_text:
+            return STATUS_REJECTED, [f"Prohibited term found in metadata: {word}"]
+        
     # Check for age restricted → add reason to reasons array, prompting requires_review response
     for word in AGE_PROHIBITED_THEMES_KEYWORDS:
         if word in combined_text :
@@ -70,23 +90,3 @@ def check_metadata(meta: Metadata) -> tuple[str, list[str]]:
 
     return STATUS_APPROVED, []
 
-def check_filename(filename: str) -> tuple[str, list[str]]:
-    text = filename.lower()
-    reasons = []
-
-    for word in PROHIBITED_THEMES_KEYWORDS:
-        if word in text:
-            return STATUS_REJECTED, [f"Prohibited term in filename: {word}"]
-
-    for word in RESTRICTED_THEMES_KEYWORDS:
-        if word in text:
-            reasons.append(f"Restricted term in filename: {word}")
-
-    for word in RESTRICTED_COUNTRY_KEYWORDS:
-        if word in text:
-            reasons.append(f"Restricted country name in filename: {word}")
-
-    if reasons:
-        return STATUS_REQUIRES_REVIEW, reasons
-
-    return STATUS_APPROVED, []

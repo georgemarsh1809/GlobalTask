@@ -1,7 +1,8 @@
 fastapi
 pydantic
-uvicorn
+uvicorn[standard]
 Pillow
 python-multipart
 pytest
-httpx
+httpx>=0.24
+pytest-asyncio

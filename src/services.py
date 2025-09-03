@@ -1,7 +1,7 @@
 import io
 from PIL import Image, ImageStat, ImageSequence
 from fastapi import HTTPException, UploadFile
-
+from .terms import CHILD_AUDIENCE_KEYWORDS, CHILD_PLACEMENT_KEYWORDS
 # Open file - return the Image object, as well as the size in bytes for consumption in main.py
 async def open_file(file: UploadFile) -> tuple[Image.Image, int]:
     contents = await file.read()
