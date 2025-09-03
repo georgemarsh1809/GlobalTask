@@ -218,26 +218,27 @@ that fall under either prohibited or restricted content.
 
     -   Global Guidelines define prohibited/restricted categories.
     -   ASA CAP Code defines specific prohibited/restricted themes:
-        -   **Tobacco** (Section 21) - full restriction.
+        -   **Tobacco** (Section 21) - full restriction (**auto-reject**).
         -   **Alcohol** (Section 18) - restrictions on portrayal and placement.
-            If audience is under 18, then creative prohibited (18.14).
+            **If audience is under 18, then creative rejected** (18.14).
         -   **Medicines, health, beauty** (Section 12) - restricts
-            health/medical claims, requires review and substantiation (12.1).
-        -   **Electronic cigarettes** (Section 22) - If audience is under 18,
-            then creative prohibited (22.11)
+            health/medical claims, **requires review and substantiation**
+            (12.1).
+        -   **Electronic cigarettes** (Section 22) - **If audience is under 18,
+            then creative rejected** (22.11)
         -   **Environmental claims** (Section 11) - requires review and
             substantiation (11.3).
         -   **Weight control / slimming** (Section 13) → avoids exploitative or
             misleading slimming claims, requires review and substantiation. If
             audience is under 18, then creative prohibited (13.3)
-        -   **Gambling** (Section 16) → restricted category. If audience is
-            under 18, then creative prohibited (16.3.13).
+        -   **Gambling** (Section 16) → restricted category. **If audience is
+            under 18, then creative prohibited** (16.3.13).
         -   **Food, supplements & nutrition** (Section 15) → Restrictions on ads
-            related to HFSS food (high fat, sugar, salt) issues, requires review
-            and substantiation (15.1).
+            related to HFSS food (high fat, sugar, salt) issues, ** requires
+            review and substantiation** (15.1).
 
     These themes were parsed to ChatGPT to create a list of terms that are
-    stored in an array in terms.py, which filenames and metadata is checked
+    stored in an array in terms.py, which filenames and metadata are checked
     against.
 
 3. **Metadata-based checks** (if parsed)
@@ -255,8 +256,7 @@ that fall under either prohibited or restricted content.
 
 ### 🤖 Use of GenAI:
 
-I used ChatGPT Plus to speed up small aspects of the project workflow, for
-example;
+I used ChatGPT Plus to speed up some aspects of the project workflow, including;
 
 -   General debugging/syntax validation
 -   Key info extraction from ASA CAP Code due to large file size. Relevant
@@ -265,4 +265,40 @@ example;
     below.
 -   Generation of restricted and prohibited terms lists (terms.py)
 -   Scaffolding of Pytest suite
--   To scaffold this README
+
+### 🎨 Design Decisions & Trade-Offs
+
+-   **No OCR / Content Parsing**: The brief did not require heavy ML or text
+    recognition, so copy inside images is not analysed. Checks are limited to
+    filenames, metadata, and file properties.
+
+-   **Keyword Lists Only**: Restricted/prohibited content detection uses curated
+    keyword lists rather than NLP or AI classification. This is deterministic,
+    fast, and transparent.
+
+-   **Lightweight Image Checks**: Contrast, aspect ratio, and GIF complexity are
+    measured with simple heuristics (e.g., standard deviation of brightness,
+    frame count, FPS) instead of advanced computer vision.
+
+-   **Single Container**: The API runs as one service (FastAPI + Uvicorn). No
+    database or external storage is included, since persistence was not
+    necessary inside scope.
+
+### ➡️ Future Prospects: What I Would Do Next
+
+-   **Add OCR For Copy Checks**: Utilise OpenAI OCR capabilities to scan text
+    inside creatives for prohibited/restricted terms/images. This would align
+    the system more closely with real-world advertising review.
+
+-   **Database Integration**: Store submission logs, decisions, and rejected
+    creatives in a database (e.g., Postgres) for auditability.
+
+-   **Admin Dashboard**: Build a lightweight front-end for reviewers to see
+    flagged creatives and override automated decisions.
+
+-   **Policy Expansion**: Add checks for accessibility (e.g. WCAG contrast
+    thresholds), localization (cultural sensitivity per market), and more
+    advanced legibility heuristics.
+
+-   **Test With Real Creatives**: Add a richer test suite with real-world sample
+    ads across both compliant and non-compliant cases.

@@ -69,7 +69,10 @@ AGE_PROHIBITED_THEMES_KEYWORDS = [
     "hfss", 
     "junk food", 
     "soda", 
-    "energy drink"
+    "energy drink",
+    "slimming", 
+    "diet pill", 
+    "weight loss"
 ]
 
 RESTRICTED_THEMES_KEYWORDS = [
