@@ -12,6 +12,7 @@ from .constants import (
 from .models import Metadata
 from .services import is_child_audience, is_child_placement
 
+# Check filename doesn't contain any prohibited terms or restricted themes/country names
 def check_filename(filename: str) -> tuple[str, list[str]]:
     text = filename.lower()
     reasons = []
@@ -33,6 +34,8 @@ def check_filename(filename: str) -> tuple[str, list[str]]:
 
     return STATUS_APPROVED, []
 
+# Check the metadata doesn't contain any prohibited terms or restricted themes/country names.
+# Also checks for any age prohibited themes if placement or audience is child related
 def check_metadata(meta: Metadata) -> tuple[str, list[str]]:
     reasons = []
     text_fields = [meta.market, meta.placement, meta.audience, meta.category]
@@ -43,8 +46,8 @@ def check_metadata(meta: Metadata) -> tuple[str, list[str]]:
     placement = (meta.placement or "").lower()
     market = (meta.market or "").lower()
     
-    # Check for child related audience - if audience is children, 
-    #   and if category includes age restricted themes → auto-reject.
+    # Check for child related audience - 
+    #   if audience is children, and if category includes age restricted themes → auto-reject.
     #   else, append a new reason, prompting at least a requires_review status
     if is_child_audience(meta.audience):
         if meta.category and any(
@@ -54,7 +57,10 @@ def check_metadata(meta: Metadata) -> tuple[str, list[str]]:
             return STATUS_REJECTED, [f"Child-related audience found: {meta.audience}. Category not allowed."]
 
         reasons.append(f"Child-related audience found: {meta.audience}")
-    
+
+    # Check for child related placement - 
+    #   if placement is children related, and if category includes age restricted themes → auto-reject.
+    #   else, append a new reason, prompting at least a requires_review status
     if is_child_placement(placement):
         if meta.category and any(
             word in (meta.category or "").lower()
@@ -85,6 +91,7 @@ def check_metadata(meta: Metadata) -> tuple[str, list[str]]:
             if country in market:
                 reasons.append(f"Restricted country found in metadata: {country}")
 
+    # if there are reasons, and a REJECTION hasn't yet been returned, return a REQUIRES_REVIEW status
     if reasons:
         return STATUS_REQUIRES_REVIEW, reasons
 

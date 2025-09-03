@@ -2,6 +2,7 @@ import io
 from PIL import Image, ImageStat, ImageSequence
 from fastapi import HTTPException, UploadFile
 from .terms import CHILD_AUDIENCE_KEYWORDS, CHILD_PLACEMENT_KEYWORDS
+
 # Open file - return the Image object, as well as the size in bytes for consumption in main.py
 async def open_file(file: UploadFile) -> tuple[Image.Image, int]:
     contents = await file.read()
@@ -51,12 +52,14 @@ def get_gif_info(img: Image.Image) -> tuple[int, float]:
 
     return frame_count, fps
 
+# Use CHILD_AUDIENCE_KEYWORDS to confirm if audience is related to children, 'u18', 'kids', etc.
 def is_child_audience(audience: str | None) -> bool:
     if not audience:
         return False
     text = audience.lower()
     return any(term in text for term in CHILD_AUDIENCE_KEYWORDS)
 
+# Use CHILD_PLACEMENT_KEYWORDS to confirm if placement is related to children, 'school', 'nursery'
 def is_child_placement(placement: str | None) -> bool:
     if not placement:
         return False

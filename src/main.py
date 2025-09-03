@@ -42,10 +42,7 @@ app = FastAPI(
     description="An API to return a creative approval response based on some simple heuristics"
 )
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
+# GET /health
 @app.get("/health")
 def get_health():
     return {
@@ -54,6 +51,7 @@ def get_health():
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 
+# POST /creative-approval
 @app.post("/creative-approval", response_model=CreativeApprovalResponse)
 async def creative_approval(
     file: UploadFile = File(...),
@@ -80,8 +78,8 @@ async def creative_approval(
         raise HTTPException(status_code=422, detail=f"File too large: {size_mb} MB (limit {limit_mb} MB)")
 
     # 1. Check File Properties
-    # 1.1 Validate file format
-        # Returns a 422 error if invalid:
+
+    # 1.1 Validate file format; returns a 422 error if invalid:
     img_format, width, height = await validate_image(img)
 
     # Default response, with file format, width, height, and size in mb
@@ -122,7 +120,7 @@ async def creative_approval(
 
     # 1.4 Check aspect ratio
     aspect_ratio = width / height
-    if aspect_ratio > MAX_ASPECT_RATIO or aspect_ratio < MIN_ASPECT_RATIO: # if ratio is greater than 2:1
+    if aspect_ratio > MAX_ASPECT_RATIO or aspect_ratio < MIN_ASPECT_RATIO: # if ratio is greater than 2:1 or lower than 1:2
         response["status"] = STATUS_REQUIRES_REVIEW
         response["reasons"].append(
             f"Aspect ratio out of bounds (0.5-2.0): {aspect_ratio:.2f}"
@@ -142,7 +140,7 @@ async def creative_approval(
         response["status"] = status
         response["reasons"].extend(reasons)
 
-    # 3. Metadata checks
+    # 3. Metadata checks (if parsed)
     if meta:
         status, reasons = check_metadata(meta)
         if status != STATUS_APPROVED:
