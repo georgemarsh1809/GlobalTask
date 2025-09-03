@@ -35,16 +35,21 @@ def calculate_contrast(img: Image.Image) -> float:
     stat = ImageStat.Stat(grayscale)
     return stat.stddev[0]
 
-def get_gif_info(img: Image.Image) -> tuple[int, list[int]]:
+def get_gif_info(img: Image.Image) -> tuple[int, float]:
     frame_count = 0
-    durations = []  
+    durations = []  # each frame's duration in ms
 
     for frame in ImageSequence.Iterator(img):
         frame_count += 1
-        duration = frame.info.get("duration", 0)
-        durations.append(duration)
+        durations.append(frame.info.get("duration", 0))
 
-    return frame_count, durations
+    if durations:
+        avg_duration = sum(durations) / len(durations)  # ms
+        fps = 1000 / avg_duration if avg_duration > 0 else 0
+    else:
+        fps = 0
+
+    return frame_count, fps
 
 def is_child_audience(audience: str | None) -> bool:
     if not audience:

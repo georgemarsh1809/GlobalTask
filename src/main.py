@@ -59,12 +59,13 @@ async def creative_approval(
     file: UploadFile = File(...),
     metadata: Optional[str] = Form(None)
 ):
-    
+    # If there is metadata, load int into the Metadata Pydantic model.
+    # If there are forbidden keys, throw a 422 error.
     try:
         meta = Metadata.model_validate_json(metadata) if metadata else Metadata()
     except (ValidationError, ValueError) as e:
         detail = {
-            "message": "Invalid metadata",
+            "message": "Invalid metadata. Valid keys include; market, placement, audience & category.",
             "errors": e.errors() if isinstance(e, ValidationError) else str(e),
         }
         raise HTTPException(status_code=422, detail=detail)
@@ -93,7 +94,20 @@ async def creative_approval(
         "img_size_mb": size_mb
     }
 
-    # 1.2 Check resolution
+    # 1.2 Check file format; handle GIF checks
+    if img_format == "GIF":
+        frame_count, fps = get_gif_info(img)
+
+        if frame_count > 100:
+            response["status"] = STATUS_REQUIRES_REVIEW
+            response["reasons"].append(f"GIF too complex: {frame_count} frames")
+
+        if fps > 10:
+            response["status"] = STATUS_REQUIRES_REVIEW
+            response["reasons"].append(f"GIF framerate too high: {fps:.1f} fps")
+
+
+    # 1.3 Check resolution
     if width < MIN_WIDTH or height < MIN_HEIGHT:
         response["status"] = STATUS_REQUIRES_REVIEW
         response["reasons"].append(
@@ -106,7 +120,7 @@ async def creative_approval(
             f"Image resolution too high: {width}x{height}px"
         )
 
-    # 1.3 Check aspect ratio
+    # 1.4 Check aspect ratio
     aspect_ratio = width / height
     if aspect_ratio > MAX_ASPECT_RATIO or aspect_ratio < MIN_ASPECT_RATIO: # if ratio is greater than 2:1
         response["status"] = STATUS_REQUIRES_REVIEW
@@ -114,7 +128,7 @@ async def creative_approval(
             f"Aspect ratio out of bounds (0.5-2.0): {aspect_ratio:.2f}"
         )   
 
-    # 1.4 Check contrast 
+    # 1.5 Check contrast 
     contrast = calculate_contrast(img)
     if contrast < MIN_CONTRAST:
         response["status"] = STATUS_REQUIRES_REVIEW

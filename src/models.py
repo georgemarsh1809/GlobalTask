@@ -2,8 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class Metadata(BaseModel):
-    # Forbid unknown fields in metadata payloads
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra='forbid') # Forbid unknown fields in metadata payloads
     market: Optional[str] = None
     placement: Optional[str] = None
     audience: Optional[str] = None
