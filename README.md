@@ -297,7 +297,7 @@ I used ChatGPT Plus to speed up some aspects of the project workflow, including;
     flagged creatives and override automated decisions.
 
 -   **Policy Expansion**: Add checks for accessibility (e.g. WCAG contrast
-    thresholds), localization (cultural sensitivity per market), and more
+    thresholds), localisation (cultural sensitivity per market), and more
     advanced legibility heuristics.
 
 -   **Test With Real Creatives**: Add a richer test suite with real-world sample
